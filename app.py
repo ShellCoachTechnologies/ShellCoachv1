@@ -45,11 +45,12 @@ def dashboard():
         return redirect(url_for('login'))
     return f"Welcome to ShellCoach, user ID: {session['user_id']}"
 
-
 @app.route('/execute', methods=['POST'])
 def execute():
     import subprocess, json
+    import openai
     cmd = request.get_json().get('command')
+
     try:
         result = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=3).decode()
     except subprocess.CalledProcessError as e:
@@ -65,9 +66,7 @@ def execute():
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a helpful Linux tutor."},
-                {"role": "user", "content": f"What does the following command do in Linux?
-
-{cmd}"}
+                {"role": "user", "content": f"What does the following command do in Linux?\n\n{cmd}"}
             ]
         )
         explanation = response['choices'][0]['message']['content']
@@ -75,6 +74,8 @@ def execute():
         explanation = "AI explanation not available."
 
     return json.dumps({'result': result, 'explanation': explanation})
+
+
 def execute():
     import subprocess, json
     cmd = request.get_json().get('command')
