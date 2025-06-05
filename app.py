@@ -43,7 +43,8 @@ def register():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return f"Welcome to ShellCoach, user ID: {session['user_id']}"
+    return render_template('dashboard.html')
+
 
 @app.route('/execute', methods=['POST'])
 def execute():
