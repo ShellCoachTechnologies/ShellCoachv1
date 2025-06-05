@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShellCoach Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    #output { white-space: pre-wrap; font-family: monospace; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white h-screen">
+  <div class="p-4">
+    <div class="flex justify-between items-center">
+      <div class="text-lg font-semibold">ShellCoach Terminal</div>
+      <img src="/static/kernelplus-logo.png" alt="Kernel+ Academy" class="w-32">
+    </div>
+
+    <div class="bg-black text-green-400 font-mono p-4 mt-4 rounded-lg shadow-md h-[60vh] overflow-y-auto" id="output">
+      user@shellcoach:$ <span id="initial-cmd">ls</span>
+      <br>file1.txt file2.txt
+      <br><br><span class="text-yellow-300">Explanation:</span> <span class="text-white">The ‘ls’ command lists the files in the current directory.</span>
+    </div>
+
+    <div class="mt-2">
+      <form id="terminal-form" class="flex">
+        <label for="command" class="mr-2 mt-2">user@shellcoach:$</label>
+        <input type="text" name="command" id="command" class="flex-grow p-2 bg-gray-700 text-white rounded" autocomplete="off">
+      </form>
+    </div>
+
+    <div class="text-right mt-4">
+      <a href="/logout" class="text-blue-400 hover:underline">Logout</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('terminal-form');
+    const commandInput = document.getElementById('command');
+    const output = document.getElementById('output');
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const cmd = commandInput.value;
+      const res = await fetch('/execute', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ command: cmd })
+      });
+      const data = await res.json();
+      output.innerHTML += `\nuser@shellcoach:$ ${cmd}\n${data.result}`;
+      commandInput.value = '';
+      output.scrollTop = output.scrollHeight;
+    };
+  </script>
+</body>
+</html>
