@@ -1,41 +1,50 @@
+
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
 
-@app.before_request
-def create_tables_once():
-    if not hasattr(app, "db_initialized"):
-        db.create_all()
-        app.db_initialized = True
-
-
-@app.route("/")
+@app.route('/')
 def index():
-    if "user_id" in session:
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("login"))
+    return redirect(url_for('login'))
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    if request.method == 'POST':
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and check_password_hash(user.password, request.form['password']):
+            session['user_id'] = user.id
+            return redirect(url_for('dashboard'))
+        return 'Invalid credentials'
+    return render_template('login.html')
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    return render_template("register.html")
+    if request.method == 'POST':
+        hashed_pw = generate_password_hash(request.form['password'])
+        new_user = User(username=request.form['username'], password=hashed_pw)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('register.html')
 
-@app.route("/dashboard")
+@app.route('/dashboard')
 def dashboard():
-    return "ShellCoach Terminal Placeholder"
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return f"Welcome to ShellCoach, user ID: {session['user_id']}"
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(host='0.0.0.0', port=10000)
