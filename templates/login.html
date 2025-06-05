@@ -1,20 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login | ShellCoach</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Login | ShellCoach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 flex justify-center items-center h-screen">
-    <div class="bg-gray-800 p-8 rounded-lg shadow-lg text-white w-full max-w-sm">
-        <img src="/static/kernelplus-logo.png" alt="Kernel+ Academy" class="mx-auto mb-6 w-32">
-        <h2 class="text-center text-2xl font-bold mb-4">Login to Your Account</h2>
-        <form method="POST">
-            <input type="text" name="username" placeholder="Username" class="w-full p-2 mb-4 bg-gray-700 rounded">
-            <input type="password" name="password" placeholder="Password" class="w-full p-2 mb-4 bg-gray-700 rounded">
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold">LOG IN</button>
-        </form>
-        <p class="text-center mt-4 text-sm text-gray-400">Don't have an account? <a href="/register" class="text-blue-400">Register</a></p>
-    </div>
+<body class="bg-[#0F172A] text-white flex items-center justify-center h-screen">
+  <div class="w-full max-w-sm">
+    <img src="/static/kernelplus-logo.png" alt="Kernel+ Academy" class="mx-auto w-32 mb-4">
+    <form method="POST" class="bg-white p-6 rounded-lg shadow-lg text-black">
+      <h2 class="text-2xl font-bold mb-4 text-center">Log in</h2>
+      <input name="username" type="text" placeholder="Username" class="w-full p-2 mb-4 border border-gray-300 rounded">
+      <input name="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border border-gray-300 rounded">
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">LOG IN</button>
+      <p class="mt-4 text-sm text-center">Don't have an account? <a href="/register" class="text-blue-500">Register</a></p>
+    </form>
+  </div>
 </body>
 </html>
