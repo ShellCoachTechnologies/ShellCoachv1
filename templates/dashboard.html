@@ -13,13 +13,18 @@
   <div class="p-4">
     <div class="flex justify-between items-center">
       <div class="text-lg font-semibold">ShellCoach Terminal</div>
-      <img src="/static/kernelplus-logo.png" alt="Kernel+ Academy" class="w-32">
+      <div class="flex items-center">
+        <label for="aiToggle" class="mr-2 text-sm">AI Explanation</label>
+        <input type="checkbox" id="aiToggle" class="accent-blue-500">
+      </div>
+      <img src="/static/kernelplus-logo.png" alt="Kernel+ Academy" class="w-32 ml-4">
     </div>
 
     <div class="bg-black text-green-400 font-mono p-4 mt-4 rounded-lg shadow-md h-[60vh] overflow-y-auto" id="output">
-      user@shellcoach:$ <span id="initial-cmd">ls</span>
-      <br>file1.txt file2.txt
-      <br><br><span class="text-yellow-300">Explanation:</span> <span class="text-white">The ‘ls’ command lists the files in the current directory.</span>
+      <p>user@shellcoach:$ ls</p>
+      <p class="text-white">file1.txt file2.txt</p>
+      <p class="text-yellow-300 font-bold">Explanation:</p>
+      <p class="text-white">The ‘ls’ command lists the files in the current directory.</p>
     </div>
 
     <div class="mt-2">
@@ -38,17 +43,22 @@
     const form = document.getElementById('terminal-form');
     const commandInput = document.getElementById('command');
     const output = document.getElementById('output');
+    const aiToggle = document.getElementById('aiToggle');
 
     form.onsubmit = async (e) => {
       e.preventDefault();
       const cmd = commandInput.value;
+      const use_ai = aiToggle.checked;
       const res = await fetch('/execute', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ command: cmd })
+        body: JSON.stringify({ command: cmd, use_ai })
       });
       const data = await res.json();
       output.innerHTML += `\nuser@shellcoach:$ ${cmd}\n${data.result}`;
+      if (use_ai) {
+        output.innerHTML += `\n\nExplanation:\n${data.explanation}`;
+      }
       commandInput.value = '';
       output.scrollTop = output.scrollHeight;
     };
