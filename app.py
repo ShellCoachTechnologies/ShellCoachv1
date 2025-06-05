@@ -73,8 +73,7 @@ def execute():
             else:
                 return jsonify({'result': 'No such directory', 'explanation': ''})
         except Exception as e:
-    explanation = f"AI explanation not available. Error: {str(e)}"
-
+            return jsonify({'result': str(e), 'explanation': ''})
 
     try:
         result = subprocess.check_output(cmd, cwd=session['cwd'], shell=True, stderr=subprocess.STDOUT, timeout=5).decode()
@@ -96,7 +95,7 @@ def execute():
             )
             explanation = response['choices'][0]['message']['content']
         except Exception as e:
-            explanation = "AI explanation not available."
+            explanation = f"AI explanation not available. Error: {str(e)}"
 
     return jsonify({'result': result, 'explanation': explanation})
 
