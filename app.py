@@ -60,6 +60,9 @@ def execute():
     use_ai = data.get('use_ai', False)
     cwd = session.get('cwd', os.getcwd())
 
+    if cmd.strip() == "clear":
+        return jsonify({'result': '__clear__', 'explanation': ''})
+
     if cmd.startswith('cd'):
         try:
             path = cmd[3:].strip()
