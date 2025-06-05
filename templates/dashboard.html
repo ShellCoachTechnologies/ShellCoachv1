@@ -54,8 +54,9 @@
       const data = await res.json();
 
       if (data.result === '__clear__') {
-        output.innerHTML = '';
-      } else {
+  output.innerHTML = '<p>user@shellcoach:$</p>';
+      }
+       else {
         output.innerHTML += `\nuser@shellcoach:$ ${cmd}\n${data.result}`;
         if (use_ai && data.explanation) {
           output.innerHTML += `\n\nExplanation:\n${data.explanation}`;
