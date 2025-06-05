@@ -12,6 +12,10 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
 @app.route("/")
 def index():
     if "user_id" in session:
@@ -20,7 +24,11 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    return "Login Page Placeholder"
+    return render_template("login.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    return render_template("register.html")
 
 @app.route("/dashboard")
 def dashboard():
