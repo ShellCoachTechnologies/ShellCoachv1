@@ -3,13 +3,15 @@ from flask import Flask, render_template, request, redirect, session, url_for, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-import openai
 import subprocess
+from openai import OpenAI
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "your_secret_key")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,15 +87,14 @@ def execute():
     explanation = ''
     if use_ai:
         try:
-            openai.api_key = os.getenv("OPENAI_API_KEY")
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a helpful Linux tutor."},
                     {"role": "user", "content": f"What does the following command do in Linux?\n\n{cmd}"}
                 ]
             )
-            explanation = response['choices'][0]['message']['content']
+            explanation = response.choices[0].message.content
         except Exception as e:
             explanation = f"AI explanation not available. Error: {str(e)}"
 
