@@ -5,11 +5,12 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'shellcoach_secret')
 
-# Simulated Virtual File System (VFS)
+# Simulated Virtual File System (VFS) with support for directories
 vfs = {
-    "welcome.txt": "Welcome to ShellCoach Technologies!",
-    "info.txt": "This is your AI-powered Linux simulator."
+    "/": ["welcome.txt", "info.txt", "home/"],
+    "/home": []
 }
+current_dir = { "path": "/" }
 
 @app.route('/')
 def index():
@@ -29,31 +30,39 @@ def execute_command():
     cmd = args[0]
     args = args[1:]
 
+    path = current_dir["path"]
     output = ""
 
     if cmd == "touch" and args:
-        vfs[args[0]] = ""
+        vfs[path].append(args[0])
         output = f"Created file: {args[0]}"
-    elif cmd == "echo" and args:
-        output = " ".join(args)
     elif cmd == "mkdir" and args:
-        vfs[args[0] + "/"] = "<DIR>"
-        output = f"Directory created: {args[0]}"
-    elif cmd == "cat" and args:
-        content = vfs.get(args[0], None)
-        output = content if content is not None else f"No such file: {args[0]}"
-    elif cmd == "rm" and args:
-        if args[0] in vfs:
-            del vfs[args[0]]
-            output = f"Removed {args[0]}"
+        dir_name = args[0]
+        dir_path = f"{path.rstrip('/')}/{dir_name}"
+        vfs[dir_path] = []
+        vfs[path].append(dir_name + "/")
+        output = f"Directory created: {dir_name}"
+    elif cmd == "cd" and args:
+        new_path = f"{path.rstrip('/')}/{args[0]}".replace("//", "/")
+        if new_path in vfs:
+            current_dir["path"] = new_path
+            output = f"Changed directory to {args[0]}"
         else:
-            output = f"No such file: {args[0]}"
-    elif cmd in ["la", "ls"]:
-        output = "\n".join(vfs.keys())
+            output = f"No such directory: {args[0]}"
+    elif cmd == "ls":
+        output = "\n".join(vfs[path])
     elif cmd == "pwd":
-        output = "/home/student"
+        output = path
     elif cmd == "whoami":
         output = session.get('username', 'unknown')
+    elif cmd == "echo" and args:
+        output = " ".join(args)
+    elif cmd == "cat" and args:
+        file_name = args[0]
+        if file_name in vfs[path]:
+            output = f"Reading file: {file_name}"
+        else:
+            output = f"No such file: {file_name}"
     else:
         output = f"Command not found: {cmd}"
 
@@ -77,7 +86,3 @@ def explain_command():
         explanation = f"AI explanation not available. Error: {str(e)}"
 
     return jsonify({'explanation': explanation})
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
