@@ -1,21 +1,46 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login | ShellCoach</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Login - ShellCoach</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #00ffcc;
+      font-family: monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background: #1e1e1e;
+      padding: 30px;
+      border: 2px solid #00ffcc;
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      background: #111;
+      color: #00ffcc;
+      border: none;
+    }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      background-color: #00ffcc;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="bg-[#0F172A] text-white flex items-center justify-center h-screen">
-  <div class="w-full max-w-sm">
-    <img src="/static/ShellCoach Technologies - PrimaryLogo.png" alt="ShellCoach" class="mx-auto w-32 mb-4">
-    <form method="POST" class="bg-white p-6 rounded-lg shadow-lg text-black">
-      <h2 class="text-2xl font-bold mb-4 text-center">Log in</h2>
-      <input name="username" type="text" placeholder="Username" class="w-full p-2 mb-4 border border-gray-300 rounded">
-      <input name="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border border-gray-300 rounded">
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">LOG IN</button>
-      <p class="mt-4 text-sm text-center">Don't have an account? <a href="/register" class="text-blue-500">Register</a></p>
-    </form>
-  </div>
+<body>
+  <form method="POST">
+    <h2>ShellCoach Login</h2>
+    <p><input name="username" placeholder="Enter username" required></p>
+    <p><button type="submit">Login</button></p>
+  </form>
 </body>
 </html>
