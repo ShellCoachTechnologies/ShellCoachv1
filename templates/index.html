@@ -11,8 +11,16 @@
       padding: 20px;
     }
     .logo {
-      width: 200px;
+      width: 300px;
       margin-bottom: 10px;
+    }
+    #toggle-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    #toggle-container label {
+      margin-left: 10px;
     }
     #terminal {
       width: 100%;
@@ -34,8 +42,10 @@
 </head>
 <body>
   <img src="/static/shellcoach_logo.png" class="logo" alt="ShellCoach Logo">
-  <label for="ai-toggle">💡 Enable AI Command Explanations</label>
-  <input type="checkbox" id="ai-toggle" checked>
+  <div id="toggle-container">
+    <input type="checkbox" id="ai-toggle" checked>
+    <label for="ai-toggle">💡 Enable AI Command Explanations</label>
+  </div>
   <div id="terminal">user@shellcoach:~$</div>
   <input id="input" placeholder="Type a command..." autofocus>
   <script>
