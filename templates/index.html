@@ -1,82 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>ShellCoach Terminal</title>
-  <style>
-    body {
-      background-color: #0d0d0d;
-      color: #00ffcc;
-      font-family: 'Courier New', monospace;
-      padding: 20px;
-    }
-    #terminal {
-      width: 100%;
-      height: 400px;
-      border: 1px solid #00ffcc;
-      padding: 10px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      background-color: #1e1e1e;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      background: #111;
-      color: #00ffcc;
-      border: none;
-    }
-    #toggle-container {
-      margin: 10px 0;
-      color: #00ffcc;
-    }
-    img.logo {
-      width: 200px;
-      margin-bottom: 10px;
-    }
-  </style>
-</head>
-<body>
-  <img src="/static/shellcoach_logo.png" alt="ShellCoach Logo" class="logo">
-  <div id="toggle-container">
-    <label><input type="checkbox" id="ai-toggle" checked> Enable AI Command Explanations</label>
-  </div>
-  <div id="terminal">user@shellcoach:~$</div>
-  <input id="input" placeholder="Type a command..." autofocus />
+from flask import Flask, render_template, request, jsonify, session
+import openai
+import os
 
-  <script>
-    const terminal = document.getElementById('terminal');
-    const input = document.getElementById('input');
-    const aiToggle = document.getElementById('ai-toggle');
+app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'shellcoach_secret')
 
-    input.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter') {
-        const cmd = input.value;
-        terminal.innerHTML += `\n${cmd}`;
-        input.value = '';
+# Simulated Virtual File System (VFS) with support for directories
+vfs = {
+    "/": ["welcome.txt", "info.txt", "home/"],
+    "/home": []
+}
+current_dir = { "path": "/" }
 
-        const res = await fetch('/execute', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ command: cmd })
-        });
-        const data = await res.json();
-        terminal.innerHTML += `\n${data.output}`;
+@app.route('/')
+def index():
+    if 'username' not in session:
+        session['username'] = 'student'
+    return render_template('index.html')
 
-        if (aiToggle.checked) {
-          const explanation = await fetch('/explain', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ command: cmd })
-          });
-          const explainData = await explanation.json();
-          terminal.innerHTML += `\n\n💡 ShellCoach Explanation: ${explainData.explanation}`;
-        }
+@app.route('/execute', methods=['POST'])
+def execute_command():
+    data = request.get_json()
+    command = data.get('command', '')
+    args = command.strip().split()
 
-        terminal.innerHTML += `\nuser@shellcoach:~$`;
-        terminal.scrollTop = terminal.scrollHeight;
-      }
-    });
-  </script>
-</body>
-</html>
+    if not args:
+        return jsonify({'output': ''})
+
+    cmd = args[0]
+    args = args[1:]
+
+    path = current_dir["path"]
+    output = ""
+
+    if cmd == "touch" and args:
+        vfs[path].append(args[0])
+        output = f"Created file: {args[0]}"
+    elif cmd == "mkdir" and args:
+        dir_name = args[0]
+        dir_path = f"{path.rstrip('/')}/{dir_name}"
+        vfs[dir_path] = []
+        vfs[path].append(dir_name + "/")
+        output = f"Directory created: {dir_name}"
+    elif cmd == "cd" and args:
+        new_path = f"{path.rstrip('/')}/{args[0]}".replace("//", "/")
+        if new_path in vfs:
+            current_dir["path"] = new_path
+            output = f"Changed directory to {args[0]}"
+        else:
+            output = f"No such directory: {args[0]}"
+    elif cmd == "ls":
+        output = "\n".join(vfs[path])
+    elif cmd == "pwd":
+        output = path
+    elif cmd == "whoami":
+        output = session.get('username', 'unknown')
+    elif cmd == "echo" and args:
+        output = " ".join(args)
+    elif cmd == "cat" and args:
+        file_name = args[0]
+        if file_name in vfs[path]:
+            output = f"Reading file: {file_name}"
+        else:
+            output = f"No such file: {file_name}"
+    else:
+        output = f"Command not found: {cmd}"
+
+    return jsonify({'output': output})
+
+@app.route('/explain', methods=['POST'])
+def explain_command():
+    data = request.get_json()
+    command = data.get('command', '')
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert Linux tutor."},
+                {"role": "user", "content": f"Explain what this Linux command does: {command}"}
+            ]
+        )
+        explanation = response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        explanation = f"AI explanation not available. Error: {str(e)}"
+
+    return jsonify({'explanation': explanation})
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
