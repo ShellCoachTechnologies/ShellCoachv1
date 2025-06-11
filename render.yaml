@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: shellcoach-secure
+    name: shellcoach-sandbox
     env: python
     plan: free
     buildCommand: ""
