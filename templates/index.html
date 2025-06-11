@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShellCoach Terminal</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #00ffcc;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+    }
+    #terminal {
+      width: 100%;
+      height: 400px;
+      border: 1px solid #00ffcc;
+      padding: 10px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      background-color: #1e1e1e;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      background: #111;
+      color: #00ffcc;
+      border: none;
+    }
+    #toggle-container {
+      margin: 10px 0;
+      color: #00ffcc;
+    }
+  </style>
+</head>
+<body>
+  <img src="/static/shellcoach_logo.png" alt="ShellCoach Logo" style="width: 200px; margin-bottom: 10px;">
+  <h1>🔥 ShellCoach Technologies 🔥</h1>
+  <div id="toggle-container">
+    <label><input type="checkbox" id="ai-toggle" checked> Enable AI Command Explanations</label>
+  </div>
+  <div id="terminal">user@shellcoach:~$</div>
+  <input id="input" placeholder="Type a command..." autofocus />
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const input = document.getElementById('input');
+    const aiToggle = document.getElementById('ai-toggle');
+
+    input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        const cmd = input.value;
+        terminal.innerHTML += `\n${cmd}`;
+        input.value = '';
+
+        const res = await fetch('/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        const data = await res.json();
+        terminal.innerHTML += `\n${data.output}`;
+
+        if (aiToggle.checked) {
+          const explanation = await fetch('/explain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command: cmd })
+          });
+          const explainData = await explanation.json();
+          terminal.innerHTML += `\n\n💡 ShellCoach Explanation: ${explainData.explanation}`;
+        }
+
+        terminal.innerHTML += `\nuser@shellcoach:~$`;
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+    });
+  </script>
+</body>
+</html>
