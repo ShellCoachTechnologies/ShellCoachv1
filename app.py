@@ -1,22 +1,35 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import openai
 import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'shellcoach_secret')
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-# Simulated Virtual File System (VFS) with support for directories
+# Simulated Virtual File System (VFS)
 vfs = {
     "/": ["welcome.txt", "info.txt", "home/"],
     "/home": []
 }
-current_dir = { "path": "/" }
+current_dir = {"path": "/"}
 
 @app.route('/')
 def index():
     if 'username' not in session:
-        session['username'] = 'student'
+        return redirect(url_for('login'))
     return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        session['username'] = request.form['username']
+        return redirect(url_for('index'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 @app.route('/execute', methods=['POST'])
 def execute_command():
@@ -29,7 +42,6 @@ def execute_command():
 
     cmd = args[0]
     args = args[1:]
-
     path = current_dir["path"]
     output = ""
 
@@ -74,14 +86,15 @@ def explain_command():
     command = data.get('command', '')
 
     try:
-        response = openai.ChatCompletion.create(
+        client = openai.OpenAI()
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are an expert Linux tutor."},
+                {"role": "system", "content": "You are a helpful Linux tutor."},
                 {"role": "user", "content": f"Explain what this Linux command does: {command}"}
             ]
         )
-        explanation = response['choices'][0]['message']['content'].strip()
+        explanation = response.choices[0].message.content.strip()
     except Exception as e:
         explanation = f"AI explanation not available. Error: {str(e)}"
 
