@@ -22,7 +22,7 @@ def execute_command():
     data = request.get_json()
     command = data.get('command', '')
     args = command.strip().split()
-    
+
     if not args:
         return jsonify({'output': ''})
 
