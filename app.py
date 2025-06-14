@@ -75,12 +75,5 @@ def dashboard():
         flash("Please log in first.")
         return redirect(url_for('login'))
 
-# TEMPORARY: Enable this route to apply migrations on Render
-@app.route('/migrate')
-def migrate_db():
-    from flask_migrate import upgrade
-    upgrade()
-    return "✅ Migration complete"
-
 if __name__ == "__main__":
     app.run(debug=True)
