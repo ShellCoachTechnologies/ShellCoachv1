@@ -1,9 +1,20 @@
 <!DOCTYPE html>
-<html><head><title>Login</title></head>
-<body style="background:#0d0d0d;color:#00ffcc;font-family:monospace;text-align:center;padding-top:100px;">
-  <form method="POST">
-    <h1>Login to ShellCoach</h1>
-    <input name="username" placeholder="Username" required style="padding:10px;background:#1e1e1e;color:#00ffcc;border:none;"><br><br>
-    <button type="submit" style="padding:10px 20px;background:#00ffcc;color:#0d0d0d;border:none;">Login</button>
-  </form>
-</body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | ShellCoach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0F172A] text-white flex items-center justify-center h-screen">
+  <div class="w-full max-w-sm">
+    <img src="/static/ShellCoach Technologies - PrimaryLogo.png" alt="ShellCoach" class="mx-auto w-32 mb-4">
+    <form method="POST" class="bg-white p-6 rounded-lg shadow-lg text-black">
+      <h2 class="text-2xl font-bold mb-4 text-center">Log in</h2>
+      <input name="username" type="text" placeholder="Username" class="w-full p-2 mb-4 border border-gray-300 rounded">
+      <input name="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border border-gray-300 rounded">
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">LOG IN</button>
+      <p class="mt-4 text-sm text-center">Don't have an account? <a href="/register" class="text-blue-500">Register</a></p>
+    </form>
+  </div>
+</body>
+</html>
