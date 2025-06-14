@@ -9,10 +9,21 @@
   <div class="w-full max-w-sm">
     <img src="/static/ShellCoach Technologies - PrimaryLogo.png" alt="ShellCoach" class="mx-auto w-32 mb-4">
     <form method="POST" class="bg-white p-6 rounded-lg shadow-lg text-black">
-      <h2 class="text-2xl font-bold mb-4 text-center">Log in</h2>
+      <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="mb-4 text-red-600">
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
       <input name="username" type="text" placeholder="Username" class="w-full p-2 mb-4 border border-gray-300 rounded">
       <input name="password" type="password" placeholder="Password" class="w-full p-2 mb-4 border border-gray-300 rounded">
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">LOG IN</button>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">LOGIN</button>
       <p class="mt-4 text-sm text-center">Don't have an account? <a href="/register" class="text-blue-500">Register</a></p>
     </form>
   </div>
