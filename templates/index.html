@@ -2,85 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ShellCoach Terminal</title>
-  <style>
-    body {
-      background-color: #0d0d0d;
-      color: #00ffcc;
-      font-family: monospace;
-      padding: 20px;
-    }
-    .logo {
-      width: 300px;
-      margin-bottom: 10px;
-    }
-    #toggle-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    #toggle-container label {
-      margin-left: 10px;
-    }
-    #terminal {
-      width: 100%;
-      height: 400px;
-      background-color: #1e1e1e;
-      padding: 10px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      border: 1px solid #00ffcc;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      background: #111;
-      color: #00ffcc;
-      border: none;
-    }
-  </style>
+  <title>Welcome to ShellCoach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <img src="/static/shellcoach_logo.png" class="logo" alt="ShellCoach Logo">
-  <div id="toggle-container">
-    <input type="checkbox" id="ai-toggle" checked>
-    <label for="ai-toggle">💡 Enable AI Command Explanations</label>
+<body class="bg-[#0F172A] text-white h-screen flex flex-col items-center justify-center px-4">
+  <img src="/static/ShellCoach Technologies - PrimaryLogo.png" alt="ShellCoach Logo" class="w-32 mb-6">
+  <div class="text-center max-w-md">
+    <h1 class="text-4xl font-bold mb-4">🚀 Welcome to <span class="text-blue-400">ShellCoach</span>!</h1>Style the homepage with your brand colors/logo
+    <p class="mb-6 text-lg text-gray-300">Master Linux skills with hands-on labs, real-time terminal simulation, and AI-powered guidance.</p>
+    <div class="flex justify-center gap-4">
+      <a href="/login" class="bg-blue-600 px-6 py-2 rounded text-white hover:bg-blue-700 transition">Login</a>
+      <a href="/register" class="border border-blue-600 px-6 py-2 rounded text-blue-400 hover:bg-blue-600 hover:text-white transition">Register</a>
+    </div>
   </div>
-  <div id="terminal">user@shellcoach:~$</div>
-  <input id="input" placeholder="Type a command..." autofocus>
-  <script>
-    const terminal = document.getElementById('terminal');
-    const input = document.getElementById('input');
-    const aiToggle = document.getElementById('ai-toggle');
-
-    input.addEventListener('keydown', async (e) => {
-      if (e.key === 'Enter') {
-        const cmd = input.value;
-        terminal.innerHTML += `\n${cmd}`;
-        input.value = '';
-
-        const res = await fetch('/execute', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ command: cmd })
-        });
-        const data = await res.json();
-        terminal.innerHTML += `\n${data.output}`;
-
-        if (aiToggle.checked) {
-          const explanation = await fetch('/explain', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ command: cmd })
-          });
-          const explainData = await explanation.json();
-          terminal.innerHTML += `\n\n💡 ShellCoach Explanation: ${explainData.explanation}`;
-        }
-
-        terminal.innerHTML += `\nuser@shellcoach:~$`;
-        terminal.scrollTop = terminal.scrollHeight;
-      }
-    });
-  </script>
 </body>
 </html>
