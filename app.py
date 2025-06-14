@@ -1,105 +1,72 @@
-from flask import Flask, render_template, request, redirect, session, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
-import subprocess
-from openai import OpenAI
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "your_secret_key")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-db = SQLAlchemy(app)
+app.config['SECRET_KEY'] = 'supersecretkey'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+db = SQLAlchemy(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-
-@app.route('/')
-def index():
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user and check_password_hash(user.password, request.form['password']):
-            session['user_id'] = user.id
-            session['cwd'] = os.getcwd()
-            return redirect(url_for('dashboard'))
-        return 'Invalid credentials'
-    return render_template('login.html')
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(256), nullable=False)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        hashed_pw = generate_password_hash(request.form['password'])
-        new_user = User(username=request.form['username'], password=hashed_pw)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if not username or not password:
+            flash("Username and password are required.")
+            return redirect(url_for('register'))
+
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Username already taken.")
+            return redirect(url_for('register'))
+
+        try:
+            hashed_pw = generate_password_hash(password, method='sha256')
+            new_user = User(username=username, password=hashed_pw)
+            db.session.add(new_user)
+            db.session.commit()
+            flash("Registration successful. Please log in.")
+            return redirect(url_for('login'))
+        except Exception as e:
+            app.logger.error(f"Registration error: {e}")
+            flash("An error occurred during registration.")
+            return redirect(url_for('register'))
+
     return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            flash("Login successful.")
+            return redirect(url_for('dashboard'))
+        else:
+            flash("Invalid username or password.")
+            return redirect(url_for('login'))
+
+    return render_template('login.html')
 
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' not in session:
+    if 'user_id' in session:
+        return "Welcome to your dashboard!"
+    else:
+        flash("Please log in first.")
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
-
-@app.route('/execute', methods=['POST'])
-def execute():
-    import json
-    data = request.get_json()
-    cmd = data.get('command')
-    use_ai = data.get('use_ai', False)
-    cwd = session.get('cwd', os.getcwd())
-
-    if cmd.strip() == "clear":
-        return jsonify({'result': '__clear__', 'explanation': ''})
-
-    if cmd.startswith('cd'):
-        try:
-            path = cmd[3:].strip()
-            new_dir = os.path.abspath(os.path.join(cwd, path))
-            if os.path.isdir(new_dir):
-                session['cwd'] = new_dir
-                return jsonify({'result': f'Changed directory to {new_dir}', 'explanation': ''})
-            else:
-                return jsonify({'result': 'No such directory', 'explanation': ''})
-        except Exception as e:
-            return jsonify({'result': str(e), 'explanation': ''})
-
-    try:
-        result = subprocess.check_output(cmd, cwd=session['cwd'], shell=True, stderr=subprocess.STDOUT, timeout=5).decode()
-    except subprocess.CalledProcessError as e:
-        result = e.output.decode()
-    except Exception as ex:
-        result = str(ex)
-
-    explanation = ''
-    if use_ai:
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful Linux tutor."},
-                    {"role": "user", "content": f"What does the following command do in Linux?\n\n{cmd}"}
-                ]
-            )
-            explanation = response.choices[0].message.content
-        except Exception as e:
-            explanation = f"AI explanation not available. Error: {str(e)}"
-
-    return jsonify({'result': result, 'explanation': explanation})
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(debug=True)
