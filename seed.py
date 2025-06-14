@@ -19,4 +19,3 @@ for user_data in test_users:
 
 db.session.commit()
 print("✅ Seeded test users.")
-
