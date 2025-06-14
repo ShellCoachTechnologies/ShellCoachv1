@@ -1,4 +1,4 @@
 flask
-pexpect
+flask_sqlalchemy
+werkzeug
 openai
-gunicorn
